@@ -39,7 +39,7 @@ $ kubectl apply -f dns-configmap-sg.yml
 
 ```
 
-# Step 4
+# Step 5
 Apply the hk.yml and sg.yml in HK & SG
 
 ```bash
@@ -50,3 +50,7 @@ $ kubectl apply -f hk.yml -n confluent-hk
 $ kubectl apply -f sg.yml -n confluent-sg
 
 ```
+
+
+# Step 6
+Verify if your cluster is running, with zookeeper spans across multiple GKE cluster
