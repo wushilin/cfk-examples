@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # annotations:
+  labels:
+    k8s-app: kube-dns
+  name: kube-dns-lb
+  namespace: kube-system
+  annotations:
+    networking.gke.io/load-balancer-type: "Internal"
+    networking.gke.io/internal-load-balancer-allow-global-access: "true"
+spec:
+  loadBalancerIP: 10.148.0.12
+  ports:
+  - name: dns-udp
+    port: 53
+    protocol: UDP
+    targetPort: 53
+  selector:
+    k8s-app: kube-dns
+  sessionAffinity: None
+  type: LoadBalancer

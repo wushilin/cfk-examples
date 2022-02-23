@@ -1,0 +1,99 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+  namespace: confluent-hk
+spec:
+  configOverrides:
+    peers:
+      - server.0=zookeeper-0.zookeeper.confluent-hk.svc.cluster.local:2888:3888
+      - server.1=zookeeper-1.zookeeper.confluent-hk.svc.cluster.local:2888:3888
+      - server.2=zookeeper-2.zookeeper.confluent-hk.svc.cluster.local:2888:3888
+      - server.20=zookeeper-0.zookeeper.confluent-sg.svc.cluster.local:2888:3888
+      - server.21=zookeeper-1.zookeeper.confluent-sg.svc.cluster.local:2888:3888
+      - server.22=zookeeper-2.zookeeper.confluent-sg.svc.cluster.local:2888:3888:observer
+    server:
+      - "4lw.commands.whitelist=*"
+  replicas: 3
+  image:
+    application: confluentinc/cp-zookeeper:7.0.1
+    init: confluentinc/confluent-init-container:2.2.0-1
+  dataVolumeCapacity: 10Gi
+  logVolumeCapacity: 10Gi
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: confluent-hk
+spec:
+  configOverrides:
+    server:
+      - "zookeeper.connect=zookeeper-0.zookeeper.confluent-hk.svc.cluster.local:2181,zookeeper-1.zookeeper.confluent-hk.svc.cluster.local:2181,zookeeper-2.zookeeper.confluent-hk.svc.cluster.local:2181,zookeeper-0.zookeeper.confluent-sg.svc.cluster.local:2181,zookeeper-1.zookeeper.confluent-sg.svc.cluster.local:2181"
+  replicas: 3
+  image:
+    application: confluentinc/cp-server:7.0.1
+    init: confluentinc/confluent-init-container:2.2.0-1
+  dataVolumeCapacity: 10Gi
+  metricReporter:
+    enabled: true
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connect
+metadata:
+  name: connect
+  namespace: confluent-hk
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-server-connect:7.0.1
+    init: confluentinc/confluent-init-container:2.2.0-1
+  dependencies:
+    kafka:
+      bootstrapEndpoint: kafka:9071
+
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KsqlDB
+metadata:
+  name: ksqldb
+  namespace: confluent-hk
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-ksqldb-server:7.0.1
+    init: confluentinc/confluent-init-container:2.2.0-1
+  dataVolumeCapacity: 10Gi
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: ControlCenter
+metadata:
+  name: controlcenter
+  namespace: confluent-hk
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-enterprise-control-center:7.0.1
+    init: confluentinc/confluent-init-container:2.2.0-1
+  dataVolumeCapacity: 10Gi
+  dependencies:
+    schemaRegistry:
+      url: http://schemaregistry.confluent.svc.cluster.local:8081
+    ksqldb:
+    - name: ksqldb
+      url: http://ksqldb.confluent.svc.cluster.local:8088
+    connect:
+    - name: connect
+      url: http://connect.confluent.svc.cluster.local:8083
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: SchemaRegistry
+metadata:
+  name: schemaregistry
+  namespace: confluent-hk
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-schema-registry:7.0.1
+    init: confluentinc/confluent-init-container:2.2.0-1
