@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-to-stdout
+  labels:
+    app: prometheus-to-stdout
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-to-stdout
+  template:
+    metadata:
+      labels:
+        app: prometheus-to-stdout
+    spec:
+      containers:
+      - name: prometheus-to-stdout
+        image: wushilin/prometheus-to-stdout:latest

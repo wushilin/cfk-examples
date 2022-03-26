@@ -3,46 +3,26 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Zookeeper
 metadata:
   name: zookeeper
-  namespace: confluent-shwu
+  namespace: wushilin
 spec:
-  configOverrides:
-    #peers:
-    #  - "server.0=zookeeper-0.zookeeper.confluent-hk.svc.cluster.local:2888:3888"
-    #  - "server.1=zookeeper-1.zookeeper.confluent-hk.svc.cluster.local:2888:3888"
-    #  - "server.2=zookeeper-2.zookeeper.confluent-hk.svc.cluster.local:2888:3888"
-      #- "server.20=zookeeper-0.zookeeper.confluent-sg.svc.cluster.local:2888:3888"
-      #- "server.21=zookeeper-1.zookeeper.confluent-sg.svc.cluster.local:2888:3888"
-      #- "server.22=zookeeper-2.zookeeper.confluent-sg.svc.cluster.local:2888:3888:observer"
-    server:
-      - "4lw.commands.whitelist=*"
-  replicas: 1
-  #replicas: 3
+  replicas: 3
   image:
     application: confluentinc/cp-zookeeper:7.0.1
     init: confluentinc/confluent-init-container:2.2.0-1
-  dataVolumeCapacity: 10Gi
-  logVolumeCapacity: 10Gi
+  dataVolumeCapacity: 57Gi
+  logVolumeCapacity: 43Gi
 ---
 apiVersion: platform.confluent.io/v1beta1
 kind: Kafka
 metadata:
   name: kafka
-  namespace: confluent-shwu
-  annotations:
-    platform.confluent.io/broker-id-offset: "1"
+  namespace: wushilin
 spec:
-  configOverrides:
-    server:
-      #- "zookeeper.connect=zookeeper-0.zookeeper.confluent-hk.svc.cluster.local:2181,zookeeper-1.zookeeper.confluent-hk.svc.cluster.local:2181,zookeeper-2.zookeeper.confluent-hk.svc.cluster.local:2181,zookeeper-0.zookeeper.confluent-sg.svc.cluster.local:2181,zookeeper-1.zookeeper.confluent-sg.svc.cluster.local:2181"
-      - "replica.selector.class=org.apache.kafka.common.replica.RackAwareReplicaSelector"
   replicas: 3
-  rackAssignment:
-    nodeLabels:
-      - "failure-domain.beta.kubernetes.io/zone"
   image:
     application: confluentinc/cp-server:7.0.1
     init: confluentinc/confluent-init-container:2.2.0-1
-  dataVolumeCapacity: 10Gi
+  dataVolumeCapacity: 177Gi
   metricReporter:
     enabled: true
 ---
@@ -50,7 +30,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Connect
 metadata:
   name: connect
-  namespace: confluent-shwu
+  namespace: wushilin
 spec:
   replicas: 1
   image:
@@ -65,25 +45,25 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KsqlDB
 metadata:
   name: ksqldb
-  namespace: confluent-shwu
+  namespace: wushilin
 spec:
   replicas: 1
   image:
     application: confluentinc/cp-ksqldb-server:7.0.1
     init: confluentinc/confluent-init-container:2.2.0-1
-  dataVolumeCapacity: 10Gi
+  dataVolumeCapacity: 71Gi
 ---
 apiVersion: platform.confluent.io/v1beta1
 kind: ControlCenter
 metadata:
   name: controlcenter
-  namespace: confluent-shwu
+  namespace: wushilin
 spec:
   replicas: 1
   image:
     application: confluentinc/cp-enterprise-control-center:7.0.1
     init: confluentinc/confluent-init-container:2.2.0-1
-  dataVolumeCapacity: 10Gi
+  dataVolumeCapacity: 83Gi
   dependencies:
     schemaRegistry:
       url: http://schemaregistry.confluent.svc.cluster.local:8081
@@ -98,9 +78,20 @@ apiVersion: platform.confluent.io/v1beta1
 kind: SchemaRegistry
 metadata:
   name: schemaregistry
-  namespace: confluent-shwu
+  namespace: wushilin
 spec:
   replicas: 1
   image:
     application: confluentinc/cp-schema-registry:7.0.1
+    init: confluentinc/confluent-init-container:2.2.0-1
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaRestProxy
+metadata:
+  name: kafkarestproxy
+  namespace: wushilin
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-kafka-rest:7.0.1
     init: confluentinc/confluent-init-container:2.2.0-1
